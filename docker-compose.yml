@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  captcha-solver:
+    image: ktenman/captcha-solver:latest
+    ports:
+      - "52525:52525"
+    environment:
+      - FLASK_ENV=development
