@@ -88,11 +88,14 @@ def initialize_model_and_mappings():
     global model, char_to_num, num_to_char, max_length
     app.logger.debug("Initializing model and mappings")
 
-    if not Path(MODEL_PATH).exists():
-        app.logger.debug(f"Model path {MODEL_PATH} does not exist. Downloading and unzipping the model.")
-        if not download_and_unzip(MODEL_PATH, MODEL_PATH):
-            app.logger.error("Failed to download and unzip the model")
-            return
+    model_path = Path(MODEL_PATH)
+    if not model_path.exists():
+        app.logger.debug(f"Model path {model_path} does not exist. Attempting to download and unzip the model.")
+        if not download_and_unzip("saved_model999", model_path):
+            app.logger.warning("Failed to download model, using the local model instead.")
+            # Extract the local saved_model999.zip
+            with zipfile.ZipFile("saved_model999.zip", 'r') as zip_ref:
+                zip_ref.extractall(model_path)
 
     model = load_model(MODEL_PATH)
     char_to_num, num_to_char = create_lookup_layers_with_hardcoded_chars()
