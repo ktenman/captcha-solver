@@ -34,4 +34,4 @@ https://drive.google.com/file/d/1RGOzJSUXnLUtAPMCjgh2QAA5W9uTPEyu/view?usp=shari
 Contributions to the project are welcome. Please ensure to follow the code standards and submit pull requests for any new features or bug fixes.
 
 ## License
-This project is licensed under [LICENSE]. Please see the LICENSE file for more details.
+This project is licensed under Apache-2.0 license. Please see the LICENSE file for more details.
