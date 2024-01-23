@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.build.outputs.image }}
+      image-tag: ${{ steps.set_output.outputs.tag }}
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Set up Docker Buildx
@@ -29,8 +29,9 @@ jobs:
           context: .
           tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
           load: true
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NAME }}:latest
-          cache-to: type=inline
+      - name: Set output
+        id: set_output
+        run: echo "::set-output name=tag::${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}"
 
   push:
     runs-on: ubuntu-latest
@@ -48,7 +49,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ needs.build.outputs.image }}
+          tags: ${{ needs.build.outputs.image-tag }}
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
