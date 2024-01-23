@@ -4,38 +4,56 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
 
 env:
   DOCKER_IMAGE_NAME: ktenman/captcha-solver
   DOCKER_IMAGE_TAG: latest
 
 jobs:
-  build_and_push:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
       - uses: actions/checkout@v4.1.1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.0.0
+      - name: Build Docker image
+        id: build
+        uses: docker/build-push-action@v5
         with:
-          fetch-depth: 1
-      - uses: docker/setup-buildx-action@v3.0.0
+          context: .
+          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
+          load: true # Important for loading image into Docker environment
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NAME }}:latest
+          cache-to: type=inline
+
+  push:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4.1.1
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-      - name: Build and push Docker image
+      - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
-          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE_NAME }}:latest
-          cache-to: type=inline
+          tags: ${{ needs.build.outputs.image }}
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
-    timeout-minutes: 10
-    needs: [ test ]
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    needs: build
+    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
