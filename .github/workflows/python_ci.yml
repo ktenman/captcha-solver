@@ -58,7 +58,7 @@ jobs:
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
     needs: build
-    if: github.actor == 'dependabot[bot]' && github.event_name == 'pull_request'
+    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
