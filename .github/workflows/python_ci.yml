@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
       - name: Download Docker image
-        uses: actions/download-artifact@v4.1.1
+        uses: actions/download-artifact@v4.1.2
         with:
           name: docker-image
           path: .
