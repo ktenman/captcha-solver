@@ -15,7 +15,7 @@ env:
 
 jobs:
   build_and_push:
-    name: 🛠️ Build Docker image and 🚀 Push Docker image
+    name: 🛠️Build and 🚀Push Docker image
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
@@ -37,7 +37,7 @@ jobs:
           cache-to: type=inline
 
   auto-merge-dependabot:
-    name: 🤖 Auto merge dependabot PR
+    name: 🤖Auto merge dependabot PR
     needs: build_and_push
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-      - name: 🤖 Merge PR from dependabot
+      - name: 🤖Merge PR from dependabot
         uses: fastify/github-action-merge-dependabot@v3.10.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
