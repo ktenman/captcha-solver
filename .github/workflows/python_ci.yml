@@ -48,7 +48,7 @@ jobs:
         run: |
           docker load < image.tar
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3.2.0
+        uses: docker/login-action@v3.3.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
