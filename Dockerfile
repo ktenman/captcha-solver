@@ -9,9 +9,10 @@ RUN apt-get update && \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv and add to PATH
+# Install uv and add to PATH permanently
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    . /root/.local/bin/env
+    echo 'export PATH="/root/.local/bin:$PATH"' >> /root/.bashrc && \
+    export PATH="/root/.local/bin:$PATH"
 
 # Copy project files first for better caching
 COPY pyproject.toml ./
