@@ -112,8 +112,7 @@ app = FastAPI(
     """,
   version="1.0.0",
   contact={
-    "name": "Development Team",
-    "email": "dev@example.com",
+    "name": "Konstantin Tenman"
   },
 )
 
