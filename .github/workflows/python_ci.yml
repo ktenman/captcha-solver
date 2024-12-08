@@ -1,4 +1,4 @@
-name: Python Flask CI with Docker
+name: Python Flask CI with Docker (Multi-Arch Matrix Build)
 
 on:
   push:
@@ -15,52 +15,66 @@ env:
 
 jobs:
   build:
-    name: 🛠️ Build Docker image
+    name: 🛠️ Build and push platform-specific images
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.7.1
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} .
-      - name: Save Docker image
-        run: |
-          docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} > image.tar
-      - name: Upload Docker image
-        uses: actions/upload-artifact@v4.4.3
+        uses: docker/setup-buildx-action@v3
         with:
-          name: docker-image
-          path: image.tar
+          install: true
+          driver-opts: network=host
 
-  push:
-    name: 🚀 Push Docker image
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4.2.2
-      - name: Download Docker image
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: docker-image
-          path: .
-      - name: Load Docker image
-        run: |
-          docker load < image.tar
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3.2.0
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-      - name: Push Docker image
+
+      # Build and push a platform-specific image. We give it a platform-specific tag.
+      - name: Build and Push Platform Image
         run: |
-          docker push ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
+          docker buildx build \
+            --platform ${{ matrix.platform }} \
+            -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-${{ matrix.platform }} \
+            --push .
+
+  manifest:
+    name: 🗂️ Create and push multi-platform manifest
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: network=host
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      # Create and push a manifest that includes all platforms
+      - name: Create and Push Manifest
+        run: |
+          # Create a manifest referencing the platform-specific images built above
+          docker manifest create ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} \
+            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-linux/amd64 \
+            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-linux/arm64
+
+          # Push the manifest to make the multi-platform image available
+          docker manifest push ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
-    needs: build
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
+    needs: [manifest]
     permissions:
       pull-requests: write
       contents: write
