@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -34,12 +34,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      # Build and push a platform-specific image. We give it a platform-specific tag.
       - name: Build and Push Platform Image
         run: |
           docker buildx build \
-            --platform ${{ matrix.platform }} \
-            -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-${{ matrix.platform }} \
+            --platform linux/${{ matrix.arch }} \
+            -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-${{ matrix.arch }} \
             --push .
 
   manifest:
@@ -59,22 +58,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      # Create and push a manifest that includes all platforms
       - name: Create and Push Manifest
         run: |
-          # Create a manifest referencing the platform-specific images built above
           docker manifest create ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }} \
-            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-linux/amd64 \
-            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-linux/arm64
+            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-amd64 \
+            --amend ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-arm64
 
-          # Push the manifest to make the multi-platform image available
           docker manifest push ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
-    needs: [manifest]
+    needs: manifest
     permissions:
       pull-requests: write
       contents: write
