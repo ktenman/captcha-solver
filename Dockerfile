@@ -14,9 +14,9 @@ COPY pyproject.toml ./
 
 # Install uv and use it to manage dependencies
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    /root/.local/bin/uv venv create && \
     /root/.local/bin/uv pip compile -o requirements.lock pyproject.toml && \
-    /root/.local/bin/uv pip install -r requirements.lock
+    /root/.local/bin/uv pip install -r requirements.lock --system
+
 # Copy model file and application code
 COPY model.keras main.py ./
 

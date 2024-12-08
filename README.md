@@ -1,37 +1,65 @@
 # CAPTCHA Solver
 
 ## Overview
-This project is a web application designed to solve CAPTCHA challenges using machine learning. It utilizes a TensorFlow model to decode CAPTCHA images and offers a solution via a Flask-based web interface or API.
+This project is a web application designed to solve CAPTCHA challenges using machine learning. It utilizes a TensorFlow model to decode CAPTCHA images and provides a Flask-based API (served via Uvicorn) for easy integration.
 
 ## Features
-- **CAPTCHA Recognition**: Uses advanced machine learning techniques to decode CAPTCHAs.
-- **Web Interface**: Built with Flask, providing an easy-to-use interface or API for CAPTCHA solving.
-- **Model Management**: Includes functionality to download and load a pre-trained TensorFlow model.
-- **Image Preprocessing**: Processes CAPTCHA images for optimal recognition by the model.
-- **Hardcoded Character Set**: Utilizes a predefined character set for CAPTCHA decoding.
+- **CAPTCHA Recognition**: Leverages a deep learning model (TensorFlow) to accurately decode CAPTCHA images.
+- **API Integration**: Exposes a simple, RESTful API endpoint for submitting base64-encoded CAPTCHA images and receiving decoded text.
+- **Preprocessing & Model Management**: Preprocessing steps to ensure images are correctly formatted for the model and a mechanism to load and serve a pre-trained model.
+- **Fixed Character Set**: Uses a predefined set of characters to interpret CAPTCHA results.
 
 ## Installation and Running with Docker
-1. **Clone the Repository**: Clone this repository to your local machine.
-2. **Build Docker Image**: Run `docker build -t captcha-solver .` to build the Docker image.
-3. **Run the Container**: Execute `docker run -p 52525:52525 captcha-solver` to start the application in a Docker container.
 
-   The application will be accessible at `http://localhost:52525`.
+### Building from Source
+1. Clone the Repository:
+   ```bash
+   git clone https://github.com/ktenman/captcha-solver.git
+   cd captcha-solver
+   ```
 
-## Testing with image from Docker Hub
-1. **Pull Docker Image**: Run `docker pull ktenman/captcha-solver:latest` to pull the Docker image.
-2. **Run the Container**: Execute `docker run -p 52525:52525 ktenman/captcha-solver:latest` to start the application in a Docker container.
+2. Build the Docker Image:
+   ```bash
+   docker build -t captcha-solver .
+   ```
 
-   The application will be accessible at `http://localhost:52525`.
+3. Run the Container:
+   ```bash
+   docker run -p 8000:8000 captcha-solver
+   ```
+   The application will be accessible at http://localhost:8000.
+
+### Using the Pre-Built Image from Docker Hub
+1. Pull the Docker Image:
+   ```bash
+   docker pull ktenman/captcha-solver:latest
+   ```
+
+2. Run the Container:
+   ```bash
+   docker run -p 8000:8000 ktenman/captcha-solver:latest
+   ```
+   The application will be accessible at http://localhost:8000.
 
 ## Usage
-- Access the web interface via the URL provided by the Docker container, typically `http://localhost:52525`.
-- Follow the on-screen instructions or API documentation for solving CAPTCHAs.
+Send a POST request to the `/predict` endpoint with a JSON payload containing the base64-encoded CAPTCHA image. The service will return the predicted text along with a confidence score.
+
+Example Request:
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+        "uuid": "123e4567-e89b-12d3-a456-426614174000",
+        "imageBase64": "<BASE64_IMAGE>"
+      }'
+```
 
 ## Training on Google Colab
+A training notebook and model file are available on Google Drive:
 https://drive.google.com/file/d/1RGOzJSUXnLUtAPMCjgh2QAA5W9uTPEyu/view?usp=sharing
 
 ## Contributing
-Contributions to the project are welcome. Please ensure to follow the code standards and submit pull requests for any new features or bug fixes.
+Contributions are welcome! Please follow the coding standards and open a pull request for any new features or bug fixes.
 
 ## License
-This project is licensed under Apache-2.0 license. Please see the LICENSE file for more details.
+This project is licensed under the Apache-2.0 license. See the LICENSE file for more details.
