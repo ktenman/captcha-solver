@@ -9,15 +9,16 @@ RUN apt-get update && \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# Install uv and add to PATH
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    . /root/.local/bin/env
 
 # Copy project files first for better caching
 COPY pyproject.toml ./
 
 # Use uv to compile dependencies and create requirements.lock
-RUN /root/.cargo/bin/uv pip compile pyproject.toml --format requirements -o requirements.lock
-RUN /root/.cargo/bin/uv pip install -r requirements.lock
+RUN uv pip compile pyproject.toml --format requirements -o requirements.lock
+RUN uv pip install -r requirements.lock
 
 # Copy model file and application code
 COPY model.keras main.py ./
