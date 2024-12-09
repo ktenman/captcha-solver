@@ -1,17 +1,40 @@
 version: 2
 updates:
-  - package-ecosystem: "docker" 
+  - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
     open-pull-requests-limit: 10
-  - package-ecosystem: "pip" 
+    labels:
+      - "docker"
+      - "dependencies"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+
+  - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
     open-pull-requests-limit: 10
+    labels:
+      - "python"
+      - "dependencies"
+    ignore:
+      - dependency-name: "numpy"
+        versions: ["2.0.0"]  # Keep numpy on 1.x as specified in pyproject.toml
+    commit-message:
+      prefix: "pip"
+      include: "scope"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
     open-pull-requests-limit: 10
+    labels:
+      - "actions"
+      - "dependencies"
+    commit-message:
+      prefix: "ci"
+      include: "scope"

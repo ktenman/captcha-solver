@@ -63,16 +63,26 @@ jobs:
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
-    if: github.actor == 'dependabot[bot]'
+    if: ${{ github.actor == 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     needs: manifest
     permissions:
       pull-requests: write
       contents: write
+      checks: read  # Added for checking status
     steps:
+      - name: ⏳ Wait for status checks
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-name: '🗂️ Create and push multi-platform manifest'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+
       - name: 🤖 Merge PR from dependabot
         uses: fastify/github-action-merge-dependabot@v3.11.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           target: minor
           merge-method: rebase
+          dependency-type: all
