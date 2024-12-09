@@ -86,7 +86,7 @@ jobs:
     steps:
       # Wait for all matrix jobs to complete
       - name: ⏳ Wait for amd64 build
-        uses: lewagon/wait-on-check-action@v1.3.1
+        uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           check-name: "🛠️ Build and push platform-specific images (amd64)"
@@ -94,7 +94,7 @@ jobs:
           wait-interval: 20
 
       - name: ⏳ Wait for arm64 build
-        uses: lewagon/wait-on-check-action@v1.3.1
+        uses: lewagon/wait-on-check-action@v1.3.4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           check-name: "🛠️ Build and push platform-specific images (arm64)"
