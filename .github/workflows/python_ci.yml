@@ -78,17 +78,26 @@ jobs:
     name: 🤖 Auto merge dependabot PR
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
-    needs: build  # Only need build job for Dependabot PRs
+    needs: build
     permissions:
       pull-requests: write
       contents: write
       checks: read
     steps:
-      - name: ⏳ Wait for status checks
+      # Wait for all matrix jobs to complete
+      - name: ⏳ Wait for amd64 build
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-name: '🛠️ Build and push platform-specific images'
+          check-name: "🛠️ Build and push platform-specific images (amd64)"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+
+      - name: ⏳ Wait for arm64 build
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          check-name: "🛠️ Build and push platform-specific images (arm64)"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
 
