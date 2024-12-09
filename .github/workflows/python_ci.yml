@@ -6,6 +6,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [ main ]
+  workflow_dispatch: # Allows manual execution of the workflow
 
 env:
   DOCKER_IMAGE_NAME: ktenman/captcha-solver
