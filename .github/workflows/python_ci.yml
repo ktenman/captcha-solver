@@ -20,29 +20,42 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           install: true
 
       - name: Log in to Docker Hub
+        if: github.actor != 'dependabot[bot]'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      # Build and push a single-arch image with a fresh tag
+      # For non-Dependabot runs - build and push
       - name: Build and Push Platform Image
+        if: github.actor != 'dependabot[bot]'
         run: |
           docker buildx build \
             --platform linux/${{ matrix.arch }} \
             -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-${{ matrix.arch }} \
             --push .
 
+      # For Dependabot runs - build only, no push
+      - name: Build Platform Image (Dependabot)
+        if: github.actor == 'dependabot[bot]'
+        run: |
+          docker buildx build \
+            --platform linux/${{ matrix.arch }} \
+            -t ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_IMAGE_TAG }}-${{ matrix.arch }} \
+            --load .
+
   manifest:
     name: 🗂️ Create and push multi-platform manifest
     runs-on: ubuntu-latest
     needs: build
+    if: github.actor != 'dependabot[bot]'  # Skip for Dependabot PRs
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -63,19 +76,19 @@ jobs:
 
   auto-merge-dependabot:
     name: 🤖 Auto merge dependabot PR
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
-    needs: manifest
+    needs: build  # Only need build job for Dependabot PRs
     permissions:
       pull-requests: write
       contents: write
-      checks: read  # Added for checking status
+      checks: read
     steps:
       - name: ⏳ Wait for status checks
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          check-name: '🗂️ Create and push multi-platform manifest'
+          check-name: '🛠️ Build and push platform-specific images'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 20
 
