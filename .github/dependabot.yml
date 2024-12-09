@@ -22,7 +22,19 @@ updates:
       - "dependencies"
     ignore:
       - dependency-name: "numpy"
-        versions: ["2.0.0"]  # Keep numpy on 1.x as specified in pyproject.toml
+        versions: ["2.0.0", "2.*", "3.*"]
+      - dependency-name: "tensorflow"
+        versions: ["3.0.0", "3.*"]
+      - dependency-name: "pillow"
+        versions: ["11.0.0", "11.*"]
+      - dependency-name: "pydantic"
+        versions: ["3.0.0", "3.*"]
+      - dependency-name: "fastapi"
+        versions: ["1.0.0", "1.*"]
+      - dependency-name: "starlette"
+        versions: ["1.0.0", "1.*"]
+      - dependency-name: "uvicorn"
+        versions: ["1.0.0", "1.*"]
     commit-message:
       prefix: "pip"
       include: "scope"
